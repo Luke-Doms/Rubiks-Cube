@@ -27,6 +27,7 @@ var fragmentShaderText =
 "}"
 ].join("\n");
 
+/*
 let baseCube =
 [
   [-1.0, 1.0, -1.0, 0.0, 0.0, 0.0],
@@ -77,6 +78,58 @@ let baseCube =
   [0.0, 1.0, -1.0, 0.0, 0.0, 0.0],
   [-1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
 
+]; */
+
+let baseCube =
+[
+  [-1.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-1.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-1.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -0.05, 0.0, 0.0, 0.0],
+  [-1.05, -1.05, -1.05, 0.0, 0.0, 0.0],
+
+  [-1.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+
+  [-0.05, -0.05, -0.05, 0.0, 0.0, 0.0],
+  [-0.05, -0.05, -1.05, 0.0, 0.0, 0.0],
+  [-1.05, -0.05, -0.05, 0.0, 0.0, 0.0]
+
 ];
 
 //maybe put the stuff above here in a different file.
@@ -90,7 +143,6 @@ puzzleScene.prototype.Load = function () {
 
   me.cube = new rubiksCube(baseCube);
   for (var cubie = 0; cubie < me.cube.cubies.length; cubie++) {
-    console.log(me.cube.cubies[cubie].positionVertices);
     me.cube.cubies[cubie] = new model(this.gl, me.cube.cubies[cubie].positionVertices); //this is sketch, feeling like we dont even need cubie objects lol
   }
 
@@ -137,13 +189,21 @@ puzzleScene.prototype.Unload = function () {
 puzzleScene.prototype.Begin = function () {
   var me = this;
 
+  this.__KeyDownWindowListener = this._OnKeyDown.bind(this);
+  this.__KeyUpWindowListener = this._OnKeyUp.bind(this);
+
+  window.addEventListener("keydown", this.__KeyDownWindowListener);
+  window.addEventListener("keyup", this.__KeyUpWindowListener);
+
   var previousFrame = performance.now();
   var dt = 0;
+  this.ANIMATION_NOT_RUNNING = true;
   var loop = function (currentFrameTime) {
     dt = currentFrameTime - previousFrame;
-    // puzzleScene.uptdate(dt);
-    me.Render();
+    me.Update(dt);
     previousFrame = currentFrameTime;
+
+    me.Render();
 
     me.nextFrameHandle = requestAnimationFrame(loop);
   }
@@ -151,8 +211,61 @@ puzzleScene.prototype.Begin = function () {
 }
 
 
-puzzleScene.prototype.Update = function () {
+puzzleScene.prototype.Update = function (dt) {
+  //not sure if this will update "backwards" in the way it needs to...
+  if (this.pressedKeys.Front && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = false;
+    this.cube.setRotate("Front", 1);
+    //this.pressedKeys.Front = false;
+  }
+  if (this.pressedKeys.Front && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = false;
+    this.cube.setRotate("Front", -1);
+    //this.pressedKeys.Front = false;
+  }
+  if (this.pressedKeys.Left && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = false;
+    this.cube.setRotate("Left", 1);
+    //this.pressedKeys.Left = false;
+  }
+  if (this.pressedKeys.Left && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = false;
+    this.cube.setRotate("Left", -1);
+    //this.pressedKeys.Left = false;
+  }
+  if (!this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = this.cube.rotate(dt);
+  }
+}
 
+puzzleScene.prototype._OnKeyDown = function (e) {
+  switch (e.code) {
+    case 'KeyQ':
+      console.log("yuckers buckers :)");
+      this.pressedKeys.Modifier = true;
+      break;
+    case 'KeyE':
+      this.pressedKeys.Front = true;
+      break;
+    case 'KeyW':
+      this.pressedKeys.Left = true;
+      break;
+  }
+}
+
+puzzleScene.prototype._OnKeyUp = function (e) {
+  console.log("UP");
+  switch (e.code) {
+    case 'KeyQ':
+      this.pressedKeys.Modifier = false;
+      break;
+    case 'KeyE':
+      this.pressedKeys.Front = false;
+      break;
+    case 'KeyW':
+      this.pressedKeys.Left = false;
+      break;
+  }
 }
 
 puzzleScene.prototype.Render = function () {
