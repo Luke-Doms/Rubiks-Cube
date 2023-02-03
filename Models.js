@@ -49,5 +49,13 @@ var createShaderProgram = function (gl, vsText, fsText) {
 }
 
 var camera = function (pos, dir, up) {
-  //to come...
+  this.pos = pos;
+  this.dir = dir;
+  this.up = up;
+  this.initialClick;
+}
+
+camera.prototype.Move = function () {
+  //get coordinates of mouse current - mouse initial and convert them to a vector in 3 space that then take cross procuct of 
+  // with "look at" vector to get axis of rotation. Use magnitude to get radians for rotation, then update view matrix
 }

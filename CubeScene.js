@@ -238,10 +238,17 @@ puzzleScene.prototype.Update = function (dt) {
   }
 }
 
+puzzleScene.prototype._OnMouseDown = function (e) {
+  //update camera.initialClick
+}
+
+puzzleScene.prototype._OnMouseUp = function (e) {
+  //call camera.move
+}
+
 puzzleScene.prototype._OnKeyDown = function (e) {
   switch (e.code) {
     case 'KeyQ':
-      console.log("yuckers buckers :)");
       this.pressedKeys.Modifier = true;
       break;
     case 'KeyE':
