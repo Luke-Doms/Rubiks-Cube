@@ -167,9 +167,22 @@ puzzleScene.prototype.Load = function () {
 
   me.viewMatrix = glMatrix.mat4.create();
   me.projMatrix = glMatrix.mat4.create();
+  me.look = glMatrix.vec3.fromValues(5, 5, 5);    //-5, -5, 3
 
-  glMatrix.mat4.lookAt(me.viewMatrix, [-5, -5, 3], [0, 0, 0], [0, -1, 0]);
-  glMatrix.mat4.perspective(me.projMatrix, glMatrix.glMatrix.toRadian(45), me.gl.canvas.clientWidth/me.gl.canvas.clientHeight, 0.1, 1000.0);
+  glMatrix.mat4.lookAt(me.viewMatrix, me.look, [0, 0, 0], [0, 0, 1]);   //have to update me.look everytime a rotation is called... incorperate into camera...
+  //glMatrix.mat4.invert(me.viewMatrix, me.viewMatrix); //Not sure about this, it might be included in the glMatrix's implimentation, because Indigo does not do this step in his tutorial
+  glMatrix.mat4.perspective(
+    me.projMatrix,
+    glMatrix.glMatrix.toRadian(45),
+    me.gl.canvas.clientWidth/me.gl.canvas.clientHeight,
+    2,
+    1000.0
+  );
+  me.camera = new camera(0, 0, 0); //in full implimentation these need to be vectors of course
+
+  me.mouseEvent;
+
+
 
   me.pressedKeys = {
     Right : false,
@@ -178,7 +191,8 @@ puzzleScene.prototype.Load = function () {
     Bottom : false,
     Front : false,
     Back : false,
-    Modifier: false
+    Modifier: false,
+    Mouse: false
   }
 }
 
@@ -191,9 +205,15 @@ puzzleScene.prototype.Begin = function () {
 
   this.__KeyDownWindowListener = this._OnKeyDown.bind(this);
   this.__KeyUpWindowListener = this._OnKeyUp.bind(this);
+  this.__MouseDownWindowListener = this._OnMouseDown.bind(this);
+  this.__MouseUpWindowListener = this._OnMouseUp.bind(this);
+  this.__MouseMoveWindowListener = this._OnMouseMove.bind(this);
 
   window.addEventListener("keydown", this.__KeyDownWindowListener);
   window.addEventListener("keyup", this.__KeyUpWindowListener);
+  window.addEventListener("mousedown", this.__MouseDownWindowListener);
+  window.addEventListener("mouseup", this.__MouseUpWindowListener);
+  window.addEventListener("mousemove", this.__MouseMoveWindowListener);
 
   var previousFrame = performance.now();
   var dt = 0;
@@ -233,17 +253,30 @@ puzzleScene.prototype.Update = function (dt) {
     this.cube.setRotate("Left", -1);
     //this.pressedKeys.Left = false;
   }
+  if (this.pressedKeys.Mouse) {
+    const updatedTensors = this.camera.Move(this.gl, this.mouseEvent, this.viewMatrix, this.projMatrix, this.look);
+    glMatrix.mat4.copy(this.viewMatrix, updatedTensors[0]);
+    this.look = updatedTensors[1];
+    console.log("look", this.look);
+  }
   if (!this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = this.cube.rotate(dt);
   }
 }
 
 puzzleScene.prototype._OnMouseDown = function (e) {
-  //update camera.initialClick
+  this.pressedKeys.Mouse = true;
+  this.camera.Set(this.gl, e, this.viewMatrix, this.projMatrix);
 }
 
 puzzleScene.prototype._OnMouseUp = function (e) {
-  //call camera.move
+  //const updatedTensors = this.camera.Move(this.gl, e, this.viewMatrix, this.projMatrix, this.look);
+  //glMatrix.mat4.copy(this.viewMatrix, updatedTensors[0]);
+  this.pressedKeys.Mouse = false;
+}
+
+puzzleScene.prototype._OnMouseMove = function (e) {
+  this.mouseEvent = e;
 }
 
 puzzleScene.prototype._OnKeyDown = function (e) {

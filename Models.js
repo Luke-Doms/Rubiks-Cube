@@ -48,14 +48,43 @@ var createShaderProgram = function (gl, vsText, fsText) {
   return program
 }
 
+//starting with basically just using the move method
+
 var camera = function (pos, dir, up) {
-  this.pos = pos;
+  this.Pos = pos;
   this.dir = dir;
   this.up = up;
-  this.initialClick;
+  this.initialMouseEvent;
 }
 
-camera.prototype.Move = function () {
-  //get coordinates of mouse current - mouse initial and convert them to a vector in 3 space that then take cross procuct of 
-  // with "look at" vector to get axis of rotation. Use magnitude to get radians for rotation, then update view matrix
+camera.prototype.Set = function (gl, e, viewMatrix, projMatrix) {
+  this.initialMouseEvent = e;
+}
+
+camera.prototype.Move = function (gl, e, viewMatrix, projMatrix, lookDirection) {
+  const clipCoord = getClipCoord(gl, e);
+  const inverse = glMatrix.mat4.create();
+  const viewProjMatrix = glMatrix.mat4.create();
+  glMatrix.mat4.multiply(viewProjMatrix, projMatrix, viewMatrix);
+  glMatrix.mat4.invert(inverse, viewProjMatrix);
+  glMatrix.vec4.transformMat4(clipCoord, clipCoord, inverse);
+
+  const clipCoordFormer = getClipCoord(gl, this.initialMouseEvent);
+  glMatrix.vec4.transformMat4(clipCoordFormer, clipCoordFormer, inverse);
+
+  const swipeDirection = glMatrix.vec3.create();
+  const rotationAxis = glMatrix.vec3.create();
+  glMatrix.vec4.subtract(swipeDirection, convert(clipCoord), convert(clipCoordFormer));
+  glMatrix.vec3.cross(rotationAxis, swipeDirection, lookDirection);
+
+  const newView = glMatrix.mat4.create();
+  const rot = glMatrix.mat4.create();
+  glMatrix.mat4.fromRotation(rot, -.5 * glMatrix.vec3.length(rotationAxis), rotationAxis);
+  const lookHomogenous = glMatrix.vec4.fromValues(lookDirection[0], lookDirection[1], lookDirection[2], 1);
+  glMatrix.mat4.multiply(newView, viewMatrix, rot);
+  glMatrix.mat4.invert(rot, rot);
+  glMatrix.vec4.transformMat4(lookHomogenous, lookHomogenous, rot);
+  lookDirection = convert(lookHomogenous);
+  this.initialMouseEvent = e;
+  return [newView, lookDirection];
 }
