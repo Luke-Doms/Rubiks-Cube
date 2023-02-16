@@ -1,0 +1,26 @@
+{
+  "name": "rubikssimulation",
+  "version": "1.0.0",
+  "description": "This is a web app that simulates a fully playable rubik's cube with some extra features thrown in. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Luke-Doms/Rubiks-Cube.git"
+  },
+  "keywords": [
+    "rubiks",
+    "webgl"
+  ],
+  "author": "Luke Doms",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Luke-Doms/Rubiks-Cube/issues"
+  },
+  "homepage": "https://github.com/Luke-Doms/Rubiks-Cube#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
