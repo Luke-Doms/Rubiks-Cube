@@ -142,7 +142,7 @@ puzzleScene.prototype.Update = function (dt) {
     this.cube.setRotate("Back", -1);
   }
 
-  if (this.pressedKeys.Right && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Right && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) { //can shorten this by passing pressed keys modifier as argument
     this.ANIMATION_NOT_RUNNING = false;
     this.cube.setRotate("Right", 1);
   }
@@ -159,7 +159,7 @@ puzzleScene.prototype.Update = function (dt) {
     this.ANIMATION_NOT_RUNNING = false;
     this.cube.setRotate("Bottom", -1);
   }
-  
+
   if (this.pressedKeys.Mouse) {
     const updatedTensors = this.camera.Move(this.gl, this.mouseEvent, this.viewMatrix, this.projMatrix, this.look);
     glMatrix.mat4.copy(this.viewMatrix, updatedTensors[0]);
@@ -240,7 +240,7 @@ puzzleScene.prototype._OnKeyUp = function (e) {
 puzzleScene.prototype.Render = function () {
   var gl = this.gl;
 
-  //gl.enable(gl.CULL_FACE);  ??????????
+  //gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST);
 
   gl.clearColor(.9, .9, .9, 1);

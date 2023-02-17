@@ -1,11 +1,6 @@
-//this section needs to be heavily reworked for readability/modularity
-
 class rubiksCube {
   constructor(positionTensor) {
-    //create 2x2x2 tensor initialized to 0 or somethings like that, maybe with tensorflow, called cubeTensor
-    //squash to create an additional listTensor object
-    //far index controls left to right, first index controls front to back, and middle index controls up down (roughly, from the fixed camera perspective)
-    this.cubeTensor = [[[0, 1], [2, 3]], [[4, 5], [6, 7]]];
+    this.cubeTensor = [[[0, 1], [2, 3]], [[4, 5], [6, 7]]]; //0 -> [0, 0, 0], 1 -> [0, 0, 1], 2 -> [0, 1, 0], 3 -> [0, 1, 1], 4 -> [1, 0, 0], 5 -> [1, 0, 1], 6 -> [1, 1, 0], 7 -> [1, 1, 1],
     this.cubies = [];
     this.totalTime = 0;
     this.final = [];
@@ -27,7 +22,30 @@ class rubiksCube {
         }
       }
     }
-    //this.cubeTensor = tf.tensor(cube);
+  }
+
+  setCubies (v, rotationAxis) {
+    this.rotateAxis = rotationAxis;
+    this.toRotate = [this.cubies[v[0]],
+                     this.cubies[v[1]],
+                     this.cubies[v[2]],
+                     this.cubies[v[3]]];
+    for (var i = 0; i < 4; i++) {
+      this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
+      glMatrix.mat4.rotate(this.buffer, this.buffer, this.parity * math.PI / 2, this.rotateAxis);
+      glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
+      glMatrix.mat4.identity(this.buffer);
+    }
+    if (this.parity == 1) {
+      [this.cubies[v[0]], this.cubies[v[1]], this.cubies[v[2]], this.cubies[v[3]]]
+      =
+      [this.cubies[v[1]], this.cubies[v[2]], this.cubies[v[3]], this.cubies[v[0]]];
+    } else {
+      [this.cubies[v[0]], this.cubies[v[1]], this.cubies[v[2]], this.cubies[v[3]]]
+      =
+      [this.cubies[v[3]], this.cubies[v[0]], this.cubies[v[1]], this.cubies[v[2]]];
+    }
+
   }
 
   setRotate (face, p) {
@@ -36,138 +54,22 @@ class rubiksCube {
     this.final = []
     switch (face) {
       case "Front":
-        //console.log(this.cubeTensor[0][0][0]);
-        this.toRotate = [this.cubies[this.cubeTensor[0][0][0]],
-                         this.cubies[this.cubeTensor[0][0][1]],
-                         this.cubies[this.cubeTensor[0][1][0]],
-                         this.cubies[this.cubeTensor[0][1][1]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateX(this.final[i], this.final[i], math.PI / 2);
-          glMatrix.mat4.rotateX(this.buffer, this.buffer,this.parity * math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-          //console.log(this.final[i]);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[0][0][0], this.cubeTensor[0][0][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0]] =
-          [this.cubeTensor[0][0][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0], this.cubeTensor[0][0][0]];
-        } else {
-          [this.cubeTensor[0][0][0], this.cubeTensor[0][0][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0]] =
-          [this.cubeTensor[0][1][0], this.cubeTensor[0][0][0], this.cubeTensor[0][0][1], this.cubeTensor[0][1][1]];
-        }
-        this.rotateAxis = [1, 0, 0];
+        this.setCubies([0, 1, 3, 2], [1, 0, 0]);
         break;
       case "Left":
-        this.toRotate = [this.cubies[this.cubeTensor[1][1][1]],
-                        this.cubies[this.cubeTensor[0][1][1]],
-                        this.cubies[this.cubeTensor[1][0][1]],
-                        this.cubies[this.cubeTensor[0][0][1]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateZ(this.final[i], this.final[i], -math.PI / 2);
-          glMatrix.mat4.rotateZ(this.buffer, this.buffer,this.parity * -math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][0][1], this.cubeTensor[1][0][1]] =
-          [this.cubeTensor[0][1][1], this.cubeTensor[0][0][1], this.cubeTensor[1][0][1], this.cubeTensor[1][1][1]];
-        } else {
-          [this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][0][1], this.cubeTensor[1][0][1]] =
-          [this.cubeTensor[1][0][1], this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][0][1]];
-        }
-
-        this.rotateAxis = [0, 0, -1];
+        this.setCubies([7, 3, 1, 5], [0, 0, -1]);
         break;
       case "Top":
-        this.toRotate = [this.cubies[this.cubeTensor[1][1][1]],
-                        this.cubies[this.cubeTensor[0][1][1]],
-                        this.cubies[this.cubeTensor[0][1][0]],
-                        this.cubies[this.cubeTensor[1][1][0]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateZ(this.final[i], this.final[i], -math.PI / 2);
-          glMatrix.mat4.rotateY(this.buffer, this.buffer,this.parity * -math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0], this.cubeTensor[1][1][0]] =
-          [this.cubeTensor[1][1][0], this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0]];
-        } else {
-          [this.cubeTensor[1][1][1], this.cubeTensor[0][1][1], this.cubeTensor[0][1][0], this.cubeTensor[1][1][0]] =
-          [this.cubeTensor[0][1][1], this.cubeTensor[0][1][0], this.cubeTensor[1][1][0], this.cubeTensor[1][1][1]];
-        }
-
-        this.rotateAxis = [0, -1, 0];
+        this.setCubies([7, 6, 2, 3], [0, -1, 0]);
         break;
       case "Back":
-        //console.log(this.cubeTensor[0][0][0]);
-        this.toRotate = [this.cubies[this.cubeTensor[1][0][0]],
-                         this.cubies[this.cubeTensor[1][0][1]],
-                         this.cubies[this.cubeTensor[1][1][0]],
-                         this.cubies[this.cubeTensor[1][1][1]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateX(this.final[i], this.final[i], math.PI / 2);
-          glMatrix.mat4.rotateX(this.buffer, this.buffer,-1* this.parity * math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-          //console.log(this.final[i]);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[1][0][0], this.cubeTensor[1][0][1], this.cubeTensor[1][1][1], this.cubeTensor[1][1][0]] =
-          [this.cubeTensor[1][1][0], this.cubeTensor[1][0][0], this.cubeTensor[1][0][1], this.cubeTensor[1][1][1]];
-        } else {
-          [this.cubeTensor[1][0][0], this.cubeTensor[1][0][1], this.cubeTensor[1][1][1], this.cubeTensor[1][1][0]] =
-          [this.cubeTensor[1][0][1], this.cubeTensor[1][1][1], this.cubeTensor[1][1][0], this.cubeTensor[1][0][0]];
-        }
-        this.rotateAxis = [-1, 0, 0];
+      this.setCubies([4, 6, 7, 5], [-1, 0, 0]);
         break;
       case "Right":
-        this.toRotate = [this.cubies[this.cubeTensor[1][1][0]],
-                        this.cubies[this.cubeTensor[0][1][0]],
-                        this.cubies[this.cubeTensor[1][0][0]],
-                        this.cubies[this.cubeTensor[0][0][0]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateZ(this.final[i], this.final[i], -math.PI / 2);
-          glMatrix.mat4.rotateZ(this.buffer, this.buffer,this.parity * math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[1][1][0], this.cubeTensor[0][1][0], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0]] =
-          [this.cubeTensor[1][0][0], this.cubeTensor[1][1][0], this.cubeTensor[0][1][0], this.cubeTensor[0][0][0]];
-        } else {
-          [this.cubeTensor[1][1][0], this.cubeTensor[0][1][0], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0]] =
-          [this.cubeTensor[0][1][0], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0], this.cubeTensor[1][1][0]];
-        }
-
-        this.rotateAxis = [0, 0, 1];
+        this.setCubies([6, 4, 0, 2], [0, 0, 1]);
         break;
       case "Bottom":
-        this.toRotate = [this.cubies[this.cubeTensor[1][0][1]],
-                        this.cubies[this.cubeTensor[0][0][1]],
-                        this.cubies[this.cubeTensor[0][0][0]],
-                        this.cubies[this.cubeTensor[1][0][0]]];
-        for (var i = 0; i < 4; i++) {
-          this.final.push(glMatrix.mat4.clone(this.toRotate[i].world));
-          //glMatrix.mat4.rotateZ(this.final[i], this.final[i], -math.PI / 2);
-          glMatrix.mat4.rotateY(this.buffer, this.buffer,this.parity * math.PI / 2);
-          glMatrix.mat4.multiply(this.final[i], this.buffer, this.final[i]);
-          glMatrix.mat4.identity(this.buffer);
-        }
-        if (this.parity == 1) {
-          [this.cubeTensor[1][0][1], this.cubeTensor[0][0][1], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0]] =
-          [this.cubeTensor[0][0][1], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0], this.cubeTensor[1][0][1]];
-        } else {
-          [this.cubeTensor[1][0][1], this.cubeTensor[0][0][1], this.cubeTensor[0][0][0], this.cubeTensor[1][0][0]] =
-          [this.cubeTensor[1][0][0], this.cubeTensor[1][0][1], this.cubeTensor[0][0][1], this.cubeTensor[0][0][0]];
-        }
-
-        this.rotateAxis = [0, 1, 0];
+        this.setCubies([5, 1, 0, 4], [0, 1, 0]);
         break;
     }
 
@@ -183,12 +85,10 @@ class rubiksCube {
       return true;
     }
     for (var i = 0; i < 4; i++) {
-      //console.log(this.toRotate[i].world);
-      //call function instead
-      //glMatrix.mat4.rotate(this.toRotate[i].world, this.toRotate[i].world, (dt / 500) * (math.PI / 2), this.rotateAxis);  //adjust for time
-      glMatrix.mat4.rotate(this.buffer, this.buffer, this.parity * (dt / 33000) * (math.PI / 2), this.rotateAxis); //this factor is a little suspicisous...
-      //glMatrix.mat4.multiply(this.toRotate[i].world, this.buffer, this.toRotate[i].world);
+      glMatrix.vec3.normalize(this.rotateAxis, this.rotateAxis);
+      glMatrix.mat4.rotate(this.buffer, this.buffer, this.parity * (dt / 500) * (math.PI / 2), this.rotateAxis);
       glMatrix.mat4.multiply(this.toRotate[i].world, this.buffer, this.toRotate[i].world);
+      glMatrix.mat4.identity(this.buffer);
     }
     return false
   }
