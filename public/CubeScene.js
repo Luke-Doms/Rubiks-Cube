@@ -64,7 +64,7 @@ puzzleScene.prototype.Load = async function () {
     Bottom : false,
     Front : false,
     Back : false,
-    Modifier: false,
+    Modifier: 1,
     Mouse: false
   }
 }
@@ -106,58 +106,35 @@ puzzleScene.prototype.Begin = function () {
 
 puzzleScene.prototype.Update = function (dt) {
   //not sure if this will update "backwards" in the way it needs to...
-  if (this.pressedKeys.Front && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Front && this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Front", 1);
-  }
-  if (this.pressedKeys.Front && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Front", -1);
+    //sides.Front.Cubies, sides.Front.Axis
+    this.cube.setRotate(this.cube.sides.Front.Cubies, this.cube.sides.Front.Axis, this.pressedKeys.Modifier);
   }
 
-  if (this.pressedKeys.Left && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Left && this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Left", 1);
-  }
-  if (this.pressedKeys.Left && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Left", -1);
+    this.cube.setRotate(this.cube.sides.Left.Cubies, this.cube.sides.Left.Axis, this.pressedKeys.Modifier);
   }
 
-  if (this.pressedKeys.Top && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Top && this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Top", 1);
-  }
-  if (this.pressedKeys.Top && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Top", -1);
+    this.cube.setRotate(this.cube.sides.Top.Cubies, this.cube.sides.Top.Axis, this.pressedKeys.Modifier);
   }
 
-  if (this.pressedKeys.Back && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Back && this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Back", 1);
-  }
-  if (this.pressedKeys.Back && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Back", -1);
+    this.cube.setRotate(this.cube.sides.Back.Cubies, this.cube.sides.Back.Axis, this.pressedKeys.Modifier);
   }
 
-  if (this.pressedKeys.Right && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) { //can shorten this by passing pressed keys modifier as argument
+  if (this.pressedKeys.Right && this.ANIMATION_NOT_RUNNING) { 
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Right", 1);
-  }
-  if (this.pressedKeys.Right && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Right", -1);
+    this.cube.setRotate(this.cube.sides.Right.Cubies, this.cube.sides.Right.Axis, this.pressedKeys.Modifier);
   }
 
-  if (this.pressedKeys.Bottom && !this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
+  if (this.pressedKeys.Bottom && this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Bottom", 1);
-  }
-  if (this.pressedKeys.Bottom && this.pressedKeys.Modifier && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate("Bottom", -1);
+    this.cube.setRotate(this.cube.sides.Bottom.Cubies, this.cube.sides.Bottom.Axis, this.pressedKeys.Modifier);
   }
 
   if (this.pressedKeys.Mouse) {
@@ -188,7 +165,7 @@ puzzleScene.prototype._OnMouseMove = function (e) {
 puzzleScene.prototype._OnKeyDown = function (e) {
   switch (e.code) {
     case 'Space':
-      this.pressedKeys.Modifier = true;
+      this.pressedKeys.Modifier = -1;
       break;
     case 'KeyQ':
       this.pressedKeys.Left = true;
@@ -214,7 +191,7 @@ puzzleScene.prototype._OnKeyDown = function (e) {
 puzzleScene.prototype._OnKeyUp = function (e) {
   switch (e.code) {
     case 'Space':
-      this.pressedKeys.Modifier = false;
+      this.pressedKeys.Modifier = 1;
       break;
     case 'KeyQ':
       this.pressedKeys.Left = false;
