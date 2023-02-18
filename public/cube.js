@@ -22,9 +22,39 @@ class rubiksCube {
         }
       }
     }
+
+    this.sides = {
+      "Front": {
+        "Cubies": [0, 1, 3, 2],
+        "Axis": [1, 0, 0]
+      },
+      "Left": {
+        "Cubies": [7, 3, 1, 5],
+        "Axis": [0, 0, -1]
+      },
+      "Top": {
+        "Cubies": [7, 6, 2, 3],
+        "Axis": [0, -1, 0]
+      },
+      "Back": {
+        "Cubies": [4, 6, 7, 5],
+        "Axis": [-1, 0, 0]
+      },
+      "Right": {
+        "Cubies": [6, 4, 0, 2],
+        "Axis": [0, 0, 1]
+      },
+      "Bottom": {
+        "Cubies": [5, 1, 0, 4],
+        "Axis": [0, 1, 0]
+      },
+    }
   }
 
-  setCubies (v, rotationAxis) {
+  setRotate (v, rotationAxis, p) {
+    this.totalTime = 0;
+    this.parity = p;
+    this.final = []
     this.rotateAxis = rotationAxis;
     this.toRotate = [this.cubies[v[0]],
                      this.cubies[v[1]],
@@ -48,32 +78,6 @@ class rubiksCube {
 
   }
 
-  setRotate (face, p) {
-    this.totalTime = 0;
-    this.parity = p;
-    this.final = []
-    switch (face) {
-      case "Front":
-        this.setCubies([0, 1, 3, 2], [1, 0, 0]);
-        break;
-      case "Left":
-        this.setCubies([7, 3, 1, 5], [0, 0, -1]);
-        break;
-      case "Top":
-        this.setCubies([7, 6, 2, 3], [0, -1, 0]);
-        break;
-      case "Back":
-      this.setCubies([4, 6, 7, 5], [-1, 0, 0]);
-        break;
-      case "Right":
-        this.setCubies([6, 4, 0, 2], [0, 0, 1]);
-        break;
-      case "Bottom":
-        this.setCubies([5, 1, 0, 4], [0, 1, 0]);
-        break;
-    }
-
-  }
   rotate (dt) {
     this.totalTime  = this.totalTime + dt;
     if (this.totalTime > 500) {
