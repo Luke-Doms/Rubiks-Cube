@@ -7,9 +7,8 @@ puzzleScene.prototype.Load = async function () {
   var me = this;
 
   //fetch twoByTwoByTwoCubie model
-  me.cube;
+  //me.cube;
   await LoadJSONResource("cubie.json").then(result => {
-    me.yo = 7;
     me.cube = new rubiksCube(result);
     for (var cubie = 0; cubie < me.cube.cubies.length; cubie++) {
       me.cube.cubies[cubie] = new model(this.gl, me.cube.cubies[cubie].positionVertices); //this is sketch, feeling like we dont even need cubie objects lol
@@ -57,6 +56,11 @@ puzzleScene.prototype.Load = async function () {
 
   me.mouseEvent;
 
+  me.shuffle = document.getElementById("shuffle");
+  me.pressedButtons = {
+    Shuffle : false
+  }
+
   me.pressedKeys = {
     Right : false,
     Left : false,
@@ -81,15 +85,18 @@ puzzleScene.prototype.Begin = function () {
   this.__MouseDownWindowListener = this._OnMouseDown.bind(this);
   this.__MouseUpWindowListener = this._OnMouseUp.bind(this);
   this.__MouseMoveWindowListener = this._OnMouseMove.bind(this);
+  this.__ShuffleClickWindowListener = this._OnShuffleClick.bind(this);
 
   window.addEventListener("keydown", this.__KeyDownWindowListener);
   window.addEventListener("keyup", this.__KeyUpWindowListener);
   window.addEventListener("mousedown", this.__MouseDownWindowListener);
   window.addEventListener("mouseup", this.__MouseUpWindowListener);
   window.addEventListener("mousemove", this.__MouseMoveWindowListener);
+  this.shuffle.addEventListener("click", this.__ShuffleClickWindowListener);
 
   var previousFrame = performance.now();
   var dt = 0;
+  me.moveBuffer = [];
   this.ANIMATION_NOT_RUNNING = true;
   var loop = function (currentFrameTime) {
     dt = currentFrameTime - previousFrame;
@@ -105,42 +112,44 @@ puzzleScene.prototype.Begin = function () {
 
 
 puzzleScene.prototype.Update = function (dt) {
-  //not sure if this will update "backwards" in the way it needs to...
-  if (this.pressedKeys.Front && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    //sides.Front.Cubies, sides.Front.Axis
-    this.cube.setRotate(this.cube.sides.Front.Cubies, this.cube.sides.Front.Axis, this.pressedKeys.Modifier);
+  if (this.pressedButtons.Shuffle) {
+    this.pressedButtons.Shuffle = false;
+    this.moveBuffer = this.moveBuffer.concat(this.cube.shuffle()); //have shuffle just return a list of 15 random moves that get pushed onto a queue to be executed. current method has to be updated
+  };
+
+  if (this.pressedKeys.Front && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Front", this.pressedKeys.Modifier]);
   }
 
-  if (this.pressedKeys.Left && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate(this.cube.sides.Left.Cubies, this.cube.sides.Left.Axis, this.pressedKeys.Modifier);
+  if (this.pressedKeys.Left && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Left", this.pressedKeys.Modifier]);
   }
 
-  if (this.pressedKeys.Top && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate(this.cube.sides.Top.Cubies, this.cube.sides.Top.Axis, this.pressedKeys.Modifier);
+  if (this.pressedKeys.Top && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Top", this.pressedKeys.Modifier]);
   }
 
-  if (this.pressedKeys.Back && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate(this.cube.sides.Back.Cubies, this.cube.sides.Back.Axis, this.pressedKeys.Modifier);
+  if (this.pressedKeys.Back && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Back", this.pressedKeys.Modifier]);
   }
 
-  if (this.pressedKeys.Right && this.ANIMATION_NOT_RUNNING) { 
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate(this.cube.sides.Right.Cubies, this.cube.sides.Right.Axis, this.pressedKeys.Modifier);
+  if (this.pressedKeys.Right && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Right", this.pressedKeys.Modifier]);
   }
 
-  if (this.pressedKeys.Bottom && this.ANIMATION_NOT_RUNNING) {
-    this.ANIMATION_NOT_RUNNING = false;
-    this.cube.setRotate(this.cube.sides.Bottom.Cubies, this.cube.sides.Bottom.Axis, this.pressedKeys.Modifier);
+  if (this.pressedKeys.Bottom && this.ANIMATION_NOT_RUNNING && this.moveBuffer.length == 0) {
+    this.moveBuffer.push(["Bottom", this.pressedKeys.Modifier]);
   }
 
   if (this.pressedKeys.Mouse) {
     const updatedTensors = this.camera.Move(this.gl, this.mouseEvent, this.viewMatrix, this.projMatrix, this.look);
     glMatrix.mat4.copy(this.viewMatrix, updatedTensors[0]);
     this.look = updatedTensors[1];
+  }
+  if (this.moveBuffer.length > 0 && this.ANIMATION_NOT_RUNNING) {
+    this.ANIMATION_NOT_RUNNING = false;
+    const move = this.moveBuffer.pop();
+    this.cube.setRotate(this.cube.sides[move[0]].Cubies, this.cube.sides[move[0]].Axis, move[1]);
   }
   if (!this.ANIMATION_NOT_RUNNING) {
     this.ANIMATION_NOT_RUNNING = this.cube.rotate(dt);
@@ -160,6 +169,10 @@ puzzleScene.prototype._OnMouseUp = function (e) {
 
 puzzleScene.prototype._OnMouseMove = function (e) {
   this.mouseEvent = e;
+}
+
+puzzleScene.prototype._OnShuffleClick = function (e) {
+  this.pressedButtons.Shuffle = true;
 }
 
 puzzleScene.prototype._OnKeyDown = function (e) {

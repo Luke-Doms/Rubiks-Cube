@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Rubiks Cube Simulation</title>
+    <link rel="stylesheet" href="style.css">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.2.0/math.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
   </head>
@@ -14,8 +15,14 @@
     </div>
     <br />
     <h1 style="color:white;text-align:center;"> Rubiks Demo </h1>
+    <div class="centered">
+      <button id="shuffle" onclick="func()">Shuffle</button>
+      <button id="B" onclick="func()">Start Timer</button>
+      <button id="B" onclick="func()">Create Algorithm</button>
+      <button id="B" onclick="func()">Create Checkpoint</button>
+    </div>
     <p style="color:white;">
-      Use the mouse to rotate the cube model around in space. You can rotate the faces clockwise by using the "q", "w", and "e" keys, 
+      Use the mouse to rotate the cube model around in space. You can rotate the faces clockwise by using the "q", "w", and "e" keys,
       where "a", "s", and "d" rotate the respective opposite facing sides. Holding the spacebar and then pressing either of those buttons
       will cause the same side to rotate, but in the counter-clockwise direction instead. More functionality to come soon...
     </p>
@@ -26,6 +33,20 @@
     <script src=Models.js> </script>
     <script src=app.js> </script>
     <script src=utils.js> </script>
+    <script>
+      var func = function() {
+        const message = "hello"
+        const data = {message};
+        options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        };
+        fetch('/api', options);
+      }
+    </script>
   </body>
 
 </html>

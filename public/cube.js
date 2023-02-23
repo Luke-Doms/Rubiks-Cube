@@ -96,6 +96,17 @@ class rubiksCube {
     }
     return false
   }
+
+  shuffle () {
+    var out = [];
+    const keys = Object.keys(this.sides);
+    const l = keys.length;
+    for (var i = 0; i < 15; i++) {
+      const rand = Math.random() * l;
+      out.push([keys[Math.floor(rand)], 2 * Math.round(rand % 1) - 1]);
+    }
+    return out;
+  }
 }
 
 class SubCube {
